@@ -1,4 +1,5 @@
 import numpy as np
+import pylab
 
 
 class myKalman(object):
@@ -20,12 +21,12 @@ class myKalman(object):
     # <i>   measureTrans(H)trnsfer the state to the form of measurement
     # <it>  prcssNsCov  (Q)
     # <it>  msrNsCov    (R)
-    #       priEECov    (P')priEECov = transition  * postEECov_last  * transition.T + msrNsCov
-    #       postEECov   (P)the initial P is not important, can be a random, but DO NOT USE 0
+    #       priEstErrCov    (P')priEstErrCov = transition  * postEECov_last  * transition.T + msrNsCov
+    #       postEstErrCov   (P)the initial P is not important, can be a random, but DO NOT USE 0
     #                      P = Mat[ei*ej]n, e = measure - statePost
-    #                      postEECov = (I - gain * tansition) * priEECov
-    #       msrResCov   (S)msrResCov = measureTrans * priEECov * measureTrans.T + msrNsCov
-    #       gain        (K)gain = priEECov * measureTrans.T * msrResCov
+    #                      postEstErrCov = (I - gain * tansition) * priEstErrCov
+    #       msrResCov   (S)msrResCov = measureTrans * priEstErrCov * measureTrans.T + msrNsCov
+    #       gain        (K)gain = priEstErrCov * measureTrans.T * msrResCov
     #                      when the noise of measurement is very small, K=measureTrans.T, when the noise of prediction is very small, K=0
     #       statePre    (xk')statePre = transition * statePost_last + controlTrans * control_last
     #       statePost   (xk)is recommended to use a measurement to initialize
@@ -53,10 +54,10 @@ class myKalman(object):
             self.measureTrans = np.mat(measureTrans)
 
     def setQ(self, Q):
-        self.prcssNsCov = np.mat(Q)
+        self.prcssNsCov = np.full((self.stateDimen, self.stateDimen), Q)
 
-    def setP(self, R):
-        self.msrNsCov = np.mat(R)
+    def setR(self, R):
+        self.msrNsCov = np.full((self.stateDimen, self.stateDimen), R)
 
     def setB(self, controlTrans):
         if self.controlSwitch:
@@ -66,38 +67,59 @@ class myKalman(object):
         #   predict
         #       x_hat'(k) = A * x_hat(k-1) + B * u(k-1)
         #       P'(k) = A * P(k-1) * A.T + Q
-        self.statePre = self.transition * self.statePost + self.controlTrans * self.control
         self.control = np.mat(control)
-        self.priEECov = self.transition * self.postEECov * self.transition.T + self.prcssNsCov
+        self.statePre = self.transition * self.statePost + self.controlTrans * self.control
+        self.priEstErrCov = self.transition * self.postEstErrCov * self.transition.T + self.prcssNsCov
 
     def correct(self, measure):
         #   correct
         #       K(k) = P'(k) * H.T * (H * P'(k) * H.T +R).I
         #       x_hat(k) = x_hat'(k) + K(k) * (z(k) - H * x_hat'(k))
         #       P(k) = (I - K(k) * H) * P'(k)
-        #       msrResCov   (S)msrResCov = measureTrans * priEECov * measureTrans.T + msrNsCov
-        #       gain        (K)gain = priEECov * measureTrans.T * msrResCov
+        #       msrResCov   (S)msrResCov = measureTrans * priEstErrCov * measureTrans.T + msrNsCov
+        #       gain        (K)gain = priEstErrCov * measureTrans.T * msrResCov
         self.measure = np.mat(measure)
-        self.msrResCov = self.measureTrans * self.priEECov * self.measureTrans.T + self.msrNsCov
-        self.gain = self.priEECov * self.measureTrans.T * self.msrResCov
-        self.statePost = self.statePre + self.gain * (self.measure - self.measureT)
+        self.msrResCov = self.measureTrans * self.priEstErrCov * self.measureTrans.T + self.msrNsCov
+        self.gain = self.priEstErrCov * self.measureTrans.T * self.msrResCov
+        self.statePost = self.statePre + self.gain * (self.measure - self.measureTrans * self.statePre)
 
     def new(self, measure, control):  # control may not needed
+        # initialing the state with measurement allows the signal converge more easily
+        # initialing the post estimate error covariance with an identity matrix because the initial value does not matter that much
         if not self.start:
             self.statePost = measure
+            self.postEstErrCov = np.full((self.stateDimen, self.stateDimen), 10)
         self.predict(control)
         self.correct(measure)
 
 
-t = 1  # period
-motor = myKalman(2, 2, 1)  # [[angle], [velocity]]
-motor.setAH([[1, 0], [0, 1]], 0)
+# period = 5ms
+t = 0.0005
+# [[angle], [velocity]]
+motor = myKalman(2, 2, 1)
+# the transition matrix and transform matrix for control vector is simply based on Newton's law
+motor.setAH([[1, t], [0, 1]], 0)
 motor.setB([[t * t / 2], [t]])
-motor.setP(1e-5)
 motor.setQ(1e-5)
+motor.setR(1e-5)
 velocity = 0
-while True:
-    velocity_last = velocity
-    control = (velocity - velocity_last) / t
-    motor.new(_, control)
+velocity_last = 0
+x = []
+# adjust Q, R with the test input
+input = np.loadtxt('./test_data/without_command.txt')  # angle, control, velocity
+for column in input:
+    angleIn = column[0]
+    controlIn = column[1]
+    velocityIn = column[2]
+    # then transfer the units
+    angle = angleIn
+    control = (controlIn * 2 * np.pi / 60 - velocity) / t  # indicate acceleration by increacesment
+    velocity = velocityIn * 2 * np.pi / 60
+    motor.new(([angle], [velocity]), control)
+    x.append(motor.statePost[0, 0])
     # 然后plot之类的
+pylab.figure(1)
+pylab.plot(input[:, 0], color='r', label='measurement')
+pylab.figure(2)
+pylab.plot(x, color='g', label='filter')
+pylab.show()
