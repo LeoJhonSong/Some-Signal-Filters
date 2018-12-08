@@ -2,9 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-P = 7e-1
-Qa = 3e-3
-Ra = 1e-7
+P = 6e-1
+Qa = 7e-2
+Ra = 1e-1
 Qv = 7.5e-2
 Rv = 5e-3
 
@@ -105,15 +105,16 @@ class myKalman(object):
 
 
 # initial the filter
-# [[angle], [velocity]]
-motor = myKalman(2, 2, 1)
+# [angle]
+motor = myKalman(1, 1, 1)
 # the transition matrix and transform matrix for control vector is simply based on Newton's law
+# angle_t = 1 * angle_0 + t * velocity
 # period = 5ms
-t = 0.0005
-motor.setAH([[1, t], [0, 1]], 0)
-motor.setB([[t * t / 2], [t]])
-motor.setQ([Qa, Qv])
-motor.setR([Ra, Rv])
+t = 0.005
+motor.setAH(0, 0)
+motor.setB(t)
+motor.setQ(Qa)
+motor.setR(Ra)
 motor.postEstErrCov = np.full((motor.stateDimen, motor.stateDimen), P)
 
 velocity = 0
@@ -124,7 +125,7 @@ y = []
 # adjust Q, R with the test input
 input = np.loadtxt('./test_data/without_command.txt')  # angle, control, velocity
 
-motor.statePost = np.mat([[input[0, 0]], [input[0, 2]*2*np.pi/60/t]])
+motor.statePost = np.mat(input[0, 0])
 
 for column in input:
     angleIn = column[0]
@@ -133,26 +134,18 @@ for column in input:
 
     # then transfer the units
     angle = angleIn
-    control = (controlIn * 2 * np.pi / 60 - velocity) / \
-        t  # indicate acceleration by increacesment
-    velocity = velocityIn * 2 * np.pi / 60
+    control = velocityIn * 2 * np.pi / 60
 
-    motor.new(([angle], [velocity]), control)
+    motor.new((angle), control)
 
     x.append(motor.statePost[0, 0])
-    y.append(motor.statePost[1, 0])
 
 # 然后plot之类的
 # 定义 x 变量的范围, 数量
 time = np.linspace(0, input.shape[0], input.shape[0])
 
-plt.subplot(211)
 plt.plot(time, x, color='green')
 plt.plot(time, input[:, 0], color='red', linestyle='--')
-
-plt.subplot(212)
-plt.plot(time, y, color='green')
-plt.plot(time, (input[:, 2]*2*np.pi/60), color='red', linestyle='--')
 
 plt.show()
 
