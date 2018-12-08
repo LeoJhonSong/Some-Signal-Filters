@@ -2,6 +2,11 @@ import numpy as np
 import pylab
 
 
+P = 5e-2
+Q = 1e-9
+R = 1e-4
+
+
 class myKalman(object):
     # Reference:    http://www.cs.unc.edu/~welch/media/pdf/kalman_intro.pdf
     # two parts:
@@ -73,22 +78,24 @@ class myKalman(object):
 
     def correct(self, measure):
         #   correct
-        #       K(k) = P'(k) * H.T * (H * P'(k) * H.T +R).I
-        #       x_hat(k) = x_hat'(k) + K(k) * (z(k) - H * x_hat'(k))
-        #       P(k) = (I - K(k) * H) * P'(k)
         #       msrResCov   (S)msrResCov = measureTrans * priEstErrCov * measureTrans.T + msrNsCov
         #       gain        (K)gain = priEstErrCov * measureTrans.T * msrResCov
+        #       K(k) = P'(k) * H.T * S.I
+        #       x_hat(k) = x_hat'(k) + K(k) * (z(k) - H * x_hat'(k))
+        #       P(k) = (I - K(k) * H) * P'(k)
         self.measure = np.mat(measure)
         self.msrResCov = self.measureTrans * self.priEstErrCov * self.measureTrans.T + self.msrNsCov
         self.gain = self.priEstErrCov * self.measureTrans.T * self.msrResCov
         self.statePost = self.statePre + self.gain * (self.measure - self.measureTrans * self.statePre)
+        self.postEstErrCov = (np.identity(self.stateDimen) - self.gain * self.measureTrans) * self.priEstErrCov
 
     def new(self, measure, control):  # control may not needed
         # initialing the state with measurement allows the signal converge more easily
         # initialing the post estimate error covariance with an identity matrix because the initial value does not matter that much
         if not self.start:
             self.statePost = measure
-            self.postEstErrCov = np.full((self.stateDimen, self.stateDimen), 10)
+            self.postEstErrCov = np.full((self.stateDimen, self.stateDimen), P)
+            self.start = True
         self.predict(control)
         self.correct(measure)
 
@@ -100,13 +107,14 @@ motor = myKalman(2, 2, 1)
 # the transition matrix and transform matrix for control vector is simply based on Newton's law
 motor.setAH([[1, t], [0, 1]], 0)
 motor.setB([[t * t / 2], [t]])
-motor.setQ(1e-5)
-motor.setR(1e-5)
+motor.setQ(Q)
+motor.setR(R)
 velocity = 0
 velocity_last = 0
 x = []
+y = []
 # adjust Q, R with the test input
-input = np.loadtxt('./test_data/without_command.txt')  # angle, control, velocity
+input = np.loadtxt('../test_data/with_command.txt')  # angle, control, velocity
 for column in input:
     angleIn = column[0]
     controlIn = column[1]
@@ -116,10 +124,11 @@ for column in input:
     control = (controlIn * 2 * np.pi / 60 - velocity) / t  # indicate acceleration by increacesment
     velocity = velocityIn * 2 * np.pi / 60
     motor.new(([angle], [velocity]), control)
-    x.append(motor.statePost[0, 0])
+    x.append(motor.statePost[1, 0])
+    y.append(motor.postEstErrCov)
     # 然后plot之类的
 pylab.figure(1)
-pylab.plot(input[:, 0], color='r', label='measurement')
-pylab.figure(2)
+pylab.plot((input[:, 2] * 2 * np.pi / 60), color='r', label='measurement')
 pylab.plot(x, color='g', label='filter')
 pylab.show()
+i = 1
