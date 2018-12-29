@@ -21,24 +21,24 @@ class myKalman(object):
     #       P(k) = (I - K(k) * H) * P'(k)
     # some var:
     # (i for initial, u for update, t for have to be tried)
-    # <i>   transition  (A)based on state
-    # <i>   controlTrans(B)transfer the form of control input
-    # <u>   control     (u)
-    # <u>   measure     (z)
-    # <i>   measureTrans(H)trnsfer the state to the form of measurement
-    # <it>  prcssNsCov  (Q)
-    # <it>  msrNsCov    (R)
+    # <i>   transition      (A)based on state
+    # <i>   controlTrans    (B)transfer the form of control input
+    # <u>   control         (u)
+    # <u>   measure         (z)
+    # <i>   measureTrans    (H)transfer the state to the form of measurement
+    # <it>  prcssNsCov      (Q)
+    # <it>  msrNsCov        (R)
     #       priEstErrCov    (P')priEstErrCov = transition  * postEECov_last  * transition.T + msrNsCov
     #       postEstErrCov   (P)the initial P is not important, can be a random, but DO NOT USE 0
-    #                      P = Mat[ei*ej]n, e = measure - statePost
-    #                      postEstErrCov = (I - gain * tansition) * priEstErrCov
-    #       msrResCov   (S)msrResCov = measureTrans * priEstErrCov * measureTrans.T + msrNsCov
-    #       gain        (K)gain = priEstErrCov * measureTrans.T * msrResCov
-    #                      when the noise of measurement is very small, K=measureTrans.T, when the noise of prediction is very small, K=0
-    #       statePre    (xk')statePre = transition * statePost_last + controlTrans * control_last
-    #       statePost   (xk)is recommended to use a measurement to initialize
-    #                       statePost = statePre + gain * (z(k) - measureTrans * statePre)
-    #                       statePost rely more on statePre when Q is small, vise versa
+    #                           P = Mat[ei*ej]n, e = measure - statePost
+    #                           postEstErrCov = (I - gain * tansition) * priEstErrCov
+    #       msrResCov       (S)msrResCov = measureTrans * priEstErrCov * measureTrans.T + msrNsCov
+    #       gain            (K)gain = priEstErrCov * measureTrans.T * msrResCov
+    #                           when the noise of measurement is very small, K=measureTrans.T, when the noise of prediction is very small, K=0
+    #       statePre        (xk')statePre = transition * statePost_last + controlTrans * control_last
+    #       statePost       (xk)is recommended to use a measurement to initialize
+    #                           statePost = statePre + gain * (z(k) - measureTrans * statePre)
+    #                           statePost rely more on statePre when Q is small, vise versa
     # controlDimen may not used, in this case input 0
     def __init__(self, stateDimen, measureDimen, controlDimen):
         self.stateDimen = stateDimen
