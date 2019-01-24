@@ -1,19 +1,21 @@
 {
     "configurations": [
         {
-            "name": "Win32",
+            "name": "MinGW",
+            "intelliSenseMode": "clang-x64",
+            "compilerPath": "C:/MinGW/bin/gcc.exe",
             "includePath": [
-                "${workspaceFolder}/**",
+                "${workspaceFolder}",
                 "${vcpkgRoot}/x64-windows/include"
             ],
-            "defines": [
-                "_DEBUG",
-                "UNICODE",
-                "_UNICODE"
-            ],
-            "windowsSdkVersion": "10.0.17134.0",
-            "compilerPath": "D:/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.14.26428/bin/Hostx64/x64/cl.exe",
-            "intelliSenseMode": "msvc-x64",
+            "defines": [],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
             "cStandard": "c11",
             "cppStandard": "c++17"
         }
