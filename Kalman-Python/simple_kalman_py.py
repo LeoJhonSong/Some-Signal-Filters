@@ -2,11 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-P = 7e-1
-Qa = 6e-2
+P = 6e-2
+Qa = 4.5e-1
 Ra = 1e-5
-Qv = 1e-7
-Rv = 1.5e-1
+Qv = 5e-7
+Rv = 5e-1
 
 
 class myKalman(object):
@@ -143,6 +143,9 @@ if __name__ == '__main__':
 
         x.append(motor.statePost[0, 0])
         y.append(motor.statePost[1, 0])
+        # with open('./dst/1.txt', 'a') as dst:
+        #     dst.write(str(motor.statePost[0, 0]))
+        #     dst.write('\n')
 
     # 然后plot之类的
     # 定义 x 变量的范围, 数量
