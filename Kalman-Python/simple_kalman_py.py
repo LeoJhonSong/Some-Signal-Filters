@@ -106,14 +106,19 @@ class myKalman(object):
 
 if __name__ == '__main__':
 
-    # initial the filter
+    # ################initial the filter################
     # [[angle], [velocity]]
     motor = myKalman(2, 2, 1)
-    # the transition matrix and transform matrix for control vector is simply based on Newton's law
-    # period = 5ms
+
+    #  ################set period = 4ms################
     t = 0.04
+
+    # ################set transition matrix and transform matrix################
+    # the transition matrix and transform matrix for control vector is simply based on Newton's law
     motor.setAH([[1, t], [0, 1]], 0)
     motor.setB([[t * t / 2], [t]])
+
+    # ################set Q, R, P################
     motor.setQ([Qa, Qv])
     motor.setR([Ra, Rv])
     motor.postEstErrCov = np.full((motor.stateDimen, motor.stateDimen), P)
