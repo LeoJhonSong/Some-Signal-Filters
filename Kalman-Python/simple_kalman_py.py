@@ -104,56 +104,58 @@ class myKalman(object):
         self.correct(measure)
 
 
-# initial the filter
-# [[angle], [velocity]]
-motor = myKalman(2, 2, 1)
-# the transition matrix and transform matrix for control vector is simply based on Newton's law
-# period = 5ms
-t = 0.005
-motor.setAH([[1, t], [0, 1]], 0)
-motor.setB([[t * t / 2], [t]])
-motor.setQ([Qa, Qv])
-motor.setR([Ra, Rv])
-motor.postEstErrCov = np.full((motor.stateDimen, motor.stateDimen), P)
+if __name__ == '__main__':
 
-velocity = 0
-velocity_last = 0
+    # initial the filter
+    # [[angle], [velocity]]
+    motor = myKalman(2, 2, 1)
+    # the transition matrix and transform matrix for control vector is simply based on Newton's law
+    # period = 5ms
+    t = 0.04
+    motor.setAH([[1, t], [0, 1]], 0)
+    motor.setB([[t * t / 2], [t]])
+    motor.setQ([Qa, Qv])
+    motor.setR([Ra, Rv])
+    motor.postEstErrCov = np.full((motor.stateDimen, motor.stateDimen), P)
 
-x = []
-y = []
-# adjust Q, R with the test input
-input = np.loadtxt('./test_data/with_command.txt')  # angle, control, velocity
+    velocity = 0
+    velocity_last = 0
 
-motor.statePost = np.mat([[input[0, 0]], [input[0, 2]*2*np.pi/60/t]])
+    x = []
+    y = []
+    # adjust Q, R with the test input
+    input = np.loadtxt('./test_data2/without_cmd1.txt')  # angle, control, velocity
 
-for column in input:
-    angleIn = column[0]
-    controlIn = column[1]
-    velocityIn = column[2]
+    # give a initial state (be careful the unit)
+    motor.statePost = np.mat([[input[0, 0]], [input[0, 2]*2*np.pi]])
 
-    # then transfer the units
-    angle = angleIn
-    control = (controlIn * 2 * np.pi / 60 - velocity) / \
-        t  # indicate acceleration by increacesment
-    velocity = velocityIn * 2 * np.pi / 60
+    for column in input:
+        angleIn = column[0]
+        controlIn = column[1]
+        velocityIn = column[2]
 
-    motor.new(([angle], [velocity]), control)
+        # then transfer the units
+        angle = angleIn
+        control = (controlIn * 2 * np.pi - velocity)  # indicate acceleration by increacesment
+        velocity = velocityIn * 2 * np.pi
 
-    x.append(motor.statePost[0, 0])
-    y.append(motor.statePost[1, 0])
+        motor.new(([angle], [velocity]), control)
 
-# 然后plot之类的
-# 定义 x 变量的范围, 数量
-time = np.linspace(0, input.shape[0], input.shape[0])
+        x.append(motor.statePost[0, 0])
+        y.append(motor.statePost[1, 0])
 
-plt.subplot(211)
-plt.plot(time, x, color='green')
-plt.plot(time, input[:, 0], color='red', linestyle='--')
+    # 然后plot之类的
+    # 定义 x 变量的范围, 数量
+    time = np.linspace(0, input.shape[0], input.shape[0])
 
-plt.subplot(212)
-plt.plot(time, y, color='green')
-plt.plot(time, (input[:, 2]*2*np.pi/60), color='red', linestyle='--')
+    plt.subplot(211)
+    plt.plot(time, x, color='green')
+    plt.plot(time, input[:, 0], color='red', linestyle='--')
 
-plt.show()
+    plt.subplot(212)
+    plt.plot(time, y, color='green')
+    plt.plot(time, (input[:, 2]*2*np.pi/60), color='red', linestyle='--')
 
-i = 1
+    plt.show()
+
+    i = 1
