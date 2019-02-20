@@ -16,11 +16,11 @@ motor.setAH([[1, t], [0, 1]], 0)
 motor.setB([[t * t / 2], [t]])
 
 # set P, Q, R
-P = 6e-2
-Qa = 4.5e-1
-Ra = 1e-5
-Qv = 6e-3
-Rv = 1e-6
+P = 5e-2
+Qa = 7e-1
+Ra = 5e-6
+Qv = 1e-5
+Rv = 1e-2
 
 motor.setP(P)
 motor.setQ([Qa, Qv])
@@ -33,8 +33,10 @@ velocity_last = 0
 # motor.statePost = np.mat([[input[0, 0]], [input[0, 2]*2*np.pi]])  # better initial value
 
 # use these two array to store the filtered data
-angle = []
+theta = []
 speed = []
+
+window = []
 
 input = np.loadtxt('./test_data2/with_cmd.txt')  # angle, control, velocity
 
@@ -52,24 +54,24 @@ for column in input:
     motor.new(([angle], [velocity]), control)
 
     # store the filtered data
-    angle.append(motor.statePost[0, 0])
-    speed.append(motor.statePost[1, 0])
+    theta.append(motor.statePost[0, 0])  # angle
+    speed.append(motor.statePost[1, 0])  # velocity
 
 # smooth the data utilizing Gaussian Blur
 # angle = np.array(angle)
 # angle = cv2.GaussianBlur(angle, (1, 25), 0)
 
 # save the filtered data
-# for i in range(len(angle)):
-#     with open('./dst/filtered.txt', 'a') as dst:
-#             dst.write(str(angle[i, 0]))
-#             dst.write('\n')
+for i in range(len(theta)):
+    with open('./dst/filtered.txt', 'a') as dst:
+            dst.write(str(theta[i]))
+            dst.write('\n')
 
 # plot them
 time = np.linspace(0, input.shape[0], input.shape[0])
 
 plt.subplot(211)
-plt.plot(time, angle, color='green')  # filtered
+plt.plot(time, theta, color='green')  # filtered
 plt.plot(time, input[:, 0], color='red', linestyle='--')  # unfiltered
 
 plt.subplot(212)
