@@ -1,7 +1,7 @@
 import simple_kalman_py as kal
 import numpy as np
 import matplotlib.pyplot as plt
-import cv2
+import reunit
 
 
 # initial the filter
@@ -38,32 +38,29 @@ speed = []
 
 window = []
 
-input = np.loadtxt('./test_data2/with_cmd.txt')  # angle, control, velocity
+input = './test_data2/with_cmd.txt'  # angle, control, velocity
 
-for column in input:
+reunit = reunit.reunit(input)
+
+while (True):
     angleIn = column[0]
     controlIn = column[1]
     velocityIn = column[2]
 
     # transfer the units
-    angle = angleIn
-    velocity = velocityIn * 2 * np.pi
-    control = (controlIn * 2 * np.pi - velocity)  # indicate acceleration by increment
-
+    current = reunit.new()
     # filter the data
-    motor.new(([angle], [velocity]), control)
-
+    if(current):
+        motor.new(([angle], [velocity]), control)
+    else:
+        break
     # store the filtered data
     theta.append(motor.statePost[0, 0])  # angle
     speed.append(motor.statePost[1, 0])  # velocity
 
-# smooth the data utilizing Gaussian Blur
-# angle = np.array(angle)
-# angle = cv2.GaussianBlur(angle, (1, 25), 0)
-
 # save the filtered data
 for i in range(len(theta)):
-    with open('./dst/filtered.txt', 'a') as dst:
+    with open('./dst/filtered.txt', 'w') as dst:
             dst.write(str(theta[i]))
             dst.write('\n')
 
