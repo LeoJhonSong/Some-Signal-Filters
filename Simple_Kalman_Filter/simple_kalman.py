@@ -117,7 +117,8 @@ class myKalman(object):
     def new(self, measure, control):
         """
         initialing the state with measurement allows the signal converge more easily\n
-        initialing the post estimate error covariance with an identity matrix because the initial value does not matter that much
+        initialing the post estimate error covariance with an identity matrix
+        because the initial value does not matter that much
         """
         self.predict(control)
         self.correct(measure)

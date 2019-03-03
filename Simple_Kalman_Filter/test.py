@@ -1,7 +1,7 @@
 import simple_kalman as kal
 import numpy as np
 import matplotlib.pyplot as plt
-from ..uni_ttransfer.unitTransfer import *
+import unitTransfer
 
 
 # initial the filter
@@ -47,11 +47,12 @@ while (True):
     current = standard.new()
     # filter the data
     if(current):
-        motor.new(current)
+        motor.new(current[0], current[1])
     else:
         break
     # store the filtered data
     theta.append(motor.statePost[0, 0])  # angle
+    o = len(theta)
     speed.append(motor.statePost[1, 0])  # velocity
 
 # save the filtered data
@@ -60,15 +61,17 @@ for i in range(len(theta)):
             dst.write(str(theta[i]))
             dst.write('\n')
 
+input = np.loadtxt(input)
+
 # plot them
-time = np.linspace(0, input.shape[0], input.shape[0])
+time = np.linspace(0, len(theta), len(theta))
 
 plt.subplot(211)
 plt.plot(time, theta, color='green')  # filtered
-plt.plot(time, input[:, 0], color='red', linestyle='--')  # unfiltered
+plt.plot(time, input[:len(theta), 0], color='red', linestyle='--')  # unfiltered
 
 plt.subplot(212)
 plt.plot(time, speed, color='green')  # filtered
-plt.plot(time, (input[:, 2]*2*np.pi/60), color='red', linestyle='--')  # unfiltered
+plt.plot(time, (input[:len(theta), 2]*2*np.pi/60), color='red', linestyle='--')  # unfiltered
 
 plt.show()
