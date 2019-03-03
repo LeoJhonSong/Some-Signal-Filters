@@ -1,4 +1,4 @@
-from Simple_Kalman_Filterimport simple_kalman as kal
+from Simple_Kalman_Filter import simple_kalman as kal
 import numpy as np
 import matplotlib.pyplot as plt
 from unit_transfer import unitTransfer
