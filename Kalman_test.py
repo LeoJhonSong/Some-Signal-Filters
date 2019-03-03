@@ -56,8 +56,11 @@ while (True):
     speed.append(motor.statePost[1, 0])  # velocity
 
 # save the filtered data
+with open('./dst/filtered.txt', 'w') as dst:
+            dst.write("")
+
 for i in range(len(theta)):
-    with open('./dst/filtered.txt', 'w') as dst:
+    with open('./dst/filtered.txt', 'a') as dst:
             dst.write(str(theta[i]))
             dst.write('\n')
 

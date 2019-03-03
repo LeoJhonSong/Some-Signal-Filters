@@ -16,6 +16,7 @@ class motorReunit(object):
         control = (self.stream[self.time, 1] * 2 * np.pi - velocity)  # indicate acceleration by increment
         self.time = self.time + 1
         if self.time == len(self.stream):
-            return [angle, velocity], control
-        else:
             return False
+        else:
+
+            return [angle, velocity], control
