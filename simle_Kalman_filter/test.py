@@ -1,7 +1,7 @@
-import simple_kalman_py as kal
+import simple_kalman as kal
 import numpy as np
 import matplotlib.pyplot as plt
-import reunit
+from ..uni_ttransfer.unitTransfer import *
 
 
 # initial the filter
@@ -40,18 +40,14 @@ window = []
 
 input = './test_data2/with_cmd.txt'  # angle, control, velocity
 
-reunit = reunit.reunit(input)
+standard = unitTransfer.motorReunit(input)
 
 while (True):
-    angleIn = column[0]
-    controlIn = column[1]
-    velocityIn = column[2]
-
     # transfer the units
-    current = reunit.new()
+    current = standard.new()
     # filter the data
     if(current):
-        motor.new(([angle], [velocity]), control)
+        motor.new(current)
     else:
         break
     # store the filtered data
