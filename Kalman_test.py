@@ -1,7 +1,7 @@
-import simple_kalman as kal
+from Simple_Kalman_Filterimport simple_kalman as kal
 import numpy as np
 import matplotlib.pyplot as plt
-import unitTransfer
+from unit_transfer import unitTransfer
 
 
 # initial the filter
