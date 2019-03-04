@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class myKalman(object):
+class Kalman(object):
     """
     if zeroinit is not 0, the initial value of posteriori state. Or you have to
     initialize it by your value.\n

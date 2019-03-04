@@ -5,7 +5,7 @@ import unitTransfer
 
 
 # initial the filter
-motor = kal.myKalman(2, 2, 1, 1)
+motor = kal.Kalman(2, 2, 1, 1)
 
 # set period = 4ms
 t = 0.04
@@ -40,7 +40,7 @@ window = []
 
 input = './test_data2/with_cmd.txt'  # angle, control, velocity
 
-standard = unitTransfer.motorReunit(input)
+standard = unitTransfer.MotorReunit(input)
 
 while (True):
     # transfer the units
@@ -64,9 +64,9 @@ for i in range(len(theta)):
             dst.write(str(theta[i]))
             dst.write('\n')
 
-input = np.loadtxt(input)
 
 # plot them
+input = np.loadtxt(input)
 time = np.linspace(0, len(theta), len(theta))
 
 plt.subplot(211)

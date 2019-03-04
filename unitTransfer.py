@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class motorReunit(object):
+class MotorReunit(object):
     """
     arg:
         stream: the data stream filepath
