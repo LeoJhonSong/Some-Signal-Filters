@@ -1,4 +1,4 @@
-import simple_kalman as kal
+import simpleKalman as kal
 import numpy as np
 import matplotlib.pyplot as plt
 import unitTransfer
@@ -36,8 +36,6 @@ velocity_last = 0
 theta = []
 speed = []
 
-window = []
-
 input = './test_data2/with_cmd.txt'  # angle, control, velocity
 
 standard = unitTransfer.MotorReunit(input)
@@ -52,7 +50,6 @@ while (True):
         break
     # store the filtered data
     theta.append(motor.statePost[0, 0])  # angle
-    o = len(theta)
     speed.append(motor.statePost[1, 0])  # velocity
 
 # save the filtered data
